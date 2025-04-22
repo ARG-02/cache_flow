@@ -114,7 +114,7 @@ animal_sports_prompts = [
     "a cartoon turtle doing a handstand at a yoga retreat"
 ]
 
-for animal_sport_prompt in animal_sports_prompts:
+for idx, animal_sport_prompt in enumerate(animal_sports_prompts):
     image = pipe(animal_sport_prompt).images[0]
-    image.save("images/100_images/astronaut_rides_horse.png")
+    image.save(f"images/100_images/{idx}.png")
 
