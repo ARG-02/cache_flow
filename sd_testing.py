@@ -1,14 +1,22 @@
+import os
 import torch
 from diffusers import StableDiffusionPipeline, DPMSolverMultistepScheduler
 from PIL import Image
 
-def save_intermediate(step: int, timestep: int, latents):
-    with torch.no_grad():
-        image = pipe.vae.decode(latents / 0.18215).sample
-        image = (image / 2 + 0.5).clamp(0, 1)
-        image = image.cpu().permute(0, 2, 3, 1).numpy()[0]
-        img = Image.fromarray((image * 255).astype("uint8"))
-        img.save(f"intermediate_step_{step:03d}.png")
+output_dir = "images/100_images"
+os.makedirs(output_dir, exist_ok=True)
+
+# Define callback function that includes prompt index
+def make_callback(prompt_idx):
+    def save_intermediate(step: int, timestep: int, latents):
+        with torch.no_grad():
+            image = pipe.vae.decode(latents / 0.18215).sample
+            image = (image / 2 + 0.5).clamp(0, 1)
+            image = image.cpu().permute(0, 2, 3, 1).numpy()[0]
+            img = Image.fromarray((image * 255).astype("uint8"))
+            filename = f"{output_dir}/prompt_{prompt_idx:03d}_step_{step:03d}.png"
+            img.save(filename)
+    return save_intermediate
 
 model_id = "stabilityai/stable-diffusion-2-1"
 
@@ -123,7 +131,9 @@ animal_sports_prompts = [
     "a cartoon turtle doing a handstand at a yoga retreat"
 ]
 
-for animal_sport_prompt in animal_sports_prompts:
-    image = pipe(animal_sport_prompt, callback=save_intermediate, callback_steps=1).images[0]
-    image.save("images/100_images/astronaut_rides_horse.png")
+for idx, prompt in enumerate(animal_sports_prompts):
+    print(f"Generating image {idx + 1}/100: {prompt}")
+    image = pipe(prompt, callback=make_callback(idx), callback_steps=1).images[0]
+    final_path = f"{output_dir}/prompt_{idx:03d}_final.png"
+    image.save(final_path)
 
