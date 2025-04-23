@@ -134,6 +134,6 @@ animal_sports_prompts = [
 for idx, prompt in enumerate(animal_sports_prompts):
     print(f"Generating image {idx + 1}/100: {prompt}")
     image = pipe(prompt, callback=make_callback(idx), callback_steps=1).images[0]
-    final_path = f"{output_dir}/prompt_{idx:03d}_final.png"
+    final_path = f"{output_dir}/prompt_{prompt_idx:03d}_step_50.png"
     image.save(final_path)
 
