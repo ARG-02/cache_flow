@@ -1,5 +1,14 @@
 import torch
 from diffusers import StableDiffusionPipeline, DPMSolverMultistepScheduler
+from PIL import Image
+
+def save_intermediate(step: int, timestep: int, latents):
+    with torch.no_grad():
+        image = pipe.vae.decode(latents / 0.18215).sample
+        image = (image / 2 + 0.5).clamp(0, 1)
+        image = image.cpu().permute(0, 2, 3, 1).numpy()[0]
+        img = Image.fromarray((image * 255).astype("uint8"))
+        img.save(f"intermediate_step_{step:03d}.png")
 
 model_id = "stabilityai/stable-diffusion-2-1"
 
@@ -114,7 +123,7 @@ animal_sports_prompts = [
     "a cartoon turtle doing a handstand at a yoga retreat"
 ]
 
-for idx, animal_sport_prompt in enumerate(animal_sports_prompts):
-    image = pipe(animal_sport_prompt).images[0]
-    image.save(f"images/100_images/{idx}.png")
+for animal_sport_prompt in animal_sports_prompts:
+    image = pipe(animal_sport_prompt, callback=save_intermediate, callback_steps=1).images[0]
+    image.save("images/100_images/astronaut_rides_horse.png")
 
