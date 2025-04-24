@@ -283,7 +283,7 @@ if __name__ == "__main__":
 
     max_length = 32768
     k = 50
-    strength = 0.2
+    strength = 0.8
 
     for idx, prompt in enumerate(animal_sports_prompts2):
         print(f"Generating image {idx + 1}/50: {prompt}")
@@ -302,10 +302,11 @@ if __name__ == "__main__":
         steps = int((20 / 0.6) * max_value)
 
         print(f"Max cosine similarity is {max_value}, starting at {steps}, taking {k-steps} steps. ")
+        print(f"Using previous image {p[max_index]}. ")
 
         states = cache.get(p[max_index])
         init_image = Image.open(states[steps]).convert("RGB")
-        result = pipe(prompt=prompt, image=init_image, strength=strength, num_inference_steps=(k-steps))
+        result = pipe(prompt=prompt, image=init_image, strength=strength, num_inference_steps=int((k-steps)/strength))
         final_path = f"{output_dir}/prompt_{idx:03d}_pre.png"
         output_image = result.images[0]
         output_image.save(final_path)
